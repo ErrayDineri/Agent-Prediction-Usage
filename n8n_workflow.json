@@ -1,0 +1,118 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "438d02c4-18c0-49c4-add0-61362ee94879",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:8000/predict",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "5d9da83c-2557-44bf-be84-e0729c43720f",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "chatId": "8142108394",
+        "text": "={{$json[\"message\"]}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        660,
+        0
+      ],
+      "id": "652e3144-4e74-440d-bc23-eb6f2f4ffb0c",
+      "name": "Telegram",
+      "webhookId": "8520ba1a-0fcb-4183-bfa5-9b010afae12f",
+      "credentials": {
+        "telegramApi": {
+          "id": "2Su5wZhqsVzYbly8",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = items[0].json.predictions;\nconst spikes = [];\n\nfor (const vm in input) {\n  for (const entry of input[vm]) {\n    const { timestamp, predicted_cpu, predicted_memory, predicted_latency } = entry;\n\n    if (predicted_cpu > 80 || predicted_memory > 75 || predicted_latency > 100) {\n      spikes.push({\n        vm,\n        timestamp,\n        cpu: predicted_cpu,\n        memory: predicted_memory,\n        latency: predicted_latency\n      });\n    }\n  }\n}\n\nreturn spikes.map(s => ({\n  json: {\n    message: `🚨 Spike detected on ${s.vm}\\n🕒 ${s.timestamp}\\nCPU: ${s.cpu}%\\nMemory: ${s.memory}%\\nLatency: ${s.latency}ms`\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "ab89e040-b3c3-4c4c-901a-860f19def738",
+      "name": "Code"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e8bc1a9c-b480-4b65-acbc-4e024a5d5d51",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8f54e1bf9bf801f10fe5a777865cb43988923562e565dc821c84b01d69921e47"
+  },
+  "id": "0ApvFcQpIgHdKqLL",
+  "tags": []
+}
