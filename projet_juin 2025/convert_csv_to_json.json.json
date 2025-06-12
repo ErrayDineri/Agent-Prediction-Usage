@@ -1,0 +1,15 @@
+convert_csv_to_json.py
+import csv
+import json
+
+chemin_csv = r'C:\Users\soumaya\Desktop\CloudNetWatcher\metrics_nutanix_nettoye.csv'
+chemin_json = r'C:\Users\soumaya\Desktop\CloudNetWatcher\metrics_nutanix_nettoye.json'
+
+with open(chemin_csv, mode='r', encoding='utf-8') as fichier_csv:
+    lecteur = csv.DictReader(fichier_csv)
+    donnees = list(lecteur)
+
+with open(chemin_json, mode='w', encoding='utf-8') as fichier_json:
+    json.dump(donnees, fichier_json, indent=4, ensure_ascii=False)
+
+print(f'✅ Fichier JSON généré : {chemin_json}')
